@@ -25,13 +25,13 @@ The workflow also runs on pushes to main and every six hours at minute 17 UTC. S
 
 ## Data and calculations
 
-The inspected export has `viaje` plus nine rating questions: `hr`, `education`, `logistics`, `im`, `sm`, `acompa`, `estadia`, `comidas`, `vuelos`. Nested Kobo group paths are supported by their final field name; ambiguous matches fail. Confirm that the live form uses this schema and ratings encoded as integers 1–5. HR, IM and SM retain the supplied abbreviations until their full names are confirmed.
+The inspected export has `viaje` plus nine rating questions: `hr`, `education`, `logistics`, `im`, `sm`, `acompa`, `estadia`, `comidas`, `vuelos`. Nested Kobo group paths are supported by their final field name; ambiguous matches fail. Confirm that the live form uses this schema and ratings encoded as integers 1–5. Labels describe preparation and coordination, while retaining department abbreviations.
 
 Trip filters use `viaje`. Periods use trip dates, measured from the successful update date, and trends group published trips by calendar month. Missing/invalid dates are excluded with a coverage count. Missing/invalid ratings are excluded, never treated as zero. Question averages weight each valid answer equally. Support and trip composite scores use complete responses within the category and weight respondents equally. Low-rating percentages use individual question answers as the denominator. Alerts list published questions below 4.0; they are prompts for review, not statistical evidence.
 
-Groups with fewer than five submissions are withheld. Questions and composites also require at least five valid responses per trip. Withheld values never enter the public JSON. Counts of excluded responses are reported for coverage; this is a simple publication threshold, not a formal anonymity guarantee. Confirm that publishing trip dates and aggregate results is appropriate for the NGO. A public website is accessible to anyone, not just people receiving the link. Comments and names are excluded entirely. Add qualitative feedback only through a separate, explicitly reviewed publication process.
+Groups with fewer than two submissions are withheld. Questions and composites also require at least two valid responses per trip. Withheld values never enter the public JSON. Counts of excluded responses are reported for coverage; this is a simple publication threshold, not a formal anonymity guarantee. Confirm that publishing trip dates and aggregate results is appropriate for the NGO. A public website is accessible to anyone, not just people receiving the link. Names and submission IDs are excluded. Open answers are included as described below.
 
-The supplied Excel example contains three test records across two trips; neither passes the default threshold. The preview therefore uses fictional data, clearly labelled on the page. None of the uploaded names or text is packaged.
+The supplied Excel example contains three test records across two trips; only the trip with two records meets the updated threshold. The preview therefore uses fictional data, clearly labelled on the page. No uploaded response names or text is included in this source package.
 
 ## Manual local export option
 
@@ -55,6 +55,12 @@ Official references: [Kobo API v2](https://support.kobotoolbox.org/migrating_api
 
 ## Open questions and confidentiality
 
-The demo includes six fictional Spanish comment cards, filterable across all four open questions: `pre_feedback` (preparation team), `feedback` (recurring Weekly Canaima team), `apoyo` (next volunteers), and `header_3` (additional recommendations). They do not follow trip/period filters, since they are design examples rather than dated submissions. The section is hidden in production, and no live open answers enter the published JSON.
+The demo includes six fictional Spanish comment cards, filterable across all four open questions: `pre_feedback` (preparation team), `feedback` (recurring Weekly Canaima team), `apoyo` (next volunteers), and `header_3` (additional recommendations). They do not follow trip/period filters, since they are design examples rather than dated submissions. Live open answers from qualifying trips are now included in production; the demo remains fictional.
 
 The supplied form explicitly states that information is handled only by IM and Logistics. Real comments need a publication basis consistent with that statement before they can be used on a public dashboard, including any manually reviewed excerpts. Review the audience and publication basis for aggregate results too.
+
+## Updated live publication behavior
+
+The workflow now uses `MIN_RESPONSES: '2'`, matching the typical two volunteers per trip. Trips with only one response remain withheld. Four open-answer fields (`pre_feedback`, `feedback`, `apoyo`, `header_3`) are included for published trips, with category and trip date but without respondent names or IDs. Blank answers are omitted. Text is rendered as plain text, never HTML. Trip/period filters apply to live comments. Text is published as submitted, so names or other identifying details typed into comments are not automatically removed. The owner has requested public publication of these comments. This supersedes the earlier preview-only comment behavior described above.
+
+To update the existing repository, replace `scripts/process_data.py`, `scripts/build.py`, `site/index.html`, `site/dashboard.js`, `.github/workflows/pages.yml`, and `tests/test_pipeline.py` with these versions, then run the workflow. The site CSS and other files can also be replaced from this package. Do not upload preview files, raw exports, or credentials.

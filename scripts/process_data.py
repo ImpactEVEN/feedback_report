@@ -34,9 +34,9 @@ def trip_date(value):
     except ValueError:
         return None
 
-def aggregate(records, min_responses=5, demo=False):
-    if min_responses < 5:
-        raise ValueError('Minimum group size must be at least 5')
+def aggregate(records, min_responses=2, demo=False):
+    if min_responses < 2:
+        raise ValueError('Minimum group size must be at least 2')
     groups = defaultdict(list)
     seen = set()
     invalid = 0
@@ -50,7 +50,9 @@ def aggregate(records, min_responses=5, demo=False):
         if day is None:
             invalid += 1
             continue
-        groups[day].append({k: rating(field(row, k)) for k in FIELDS})
+        clean = {k: rating(field(row, k)) for k in FIELDS}
+        clean['comments'] = [{'category': k, 'text': field(row, k).strip()} for k in ['pre_feedback', 'feedback', 'apoyo', 'header_3'] if isinstance(field(row, k), str) and field(row, k).strip()]
+        groups[day].append(clean)
     buckets = []
     withheld = 0
     for day, rows in sorted(groups.items()):
@@ -67,7 +69,7 @@ def aggregate(records, min_responses=5, demo=False):
             # Complete cases keep each respondent equally weighted.
             values = [sum(r[k] for k in keys) / len(keys) for r in rows if all(r[k] is not None for k in keys)]
             composites[name] = {'sum': sum(values), 'n': len(values)} if len(values) >= min_responses else {'sum': None, 'n': None}
-        buckets.append({'date': day, 'responses': len(rows), 'metrics': metrics, 'composites': composites})
+        buckets.append({'date': day, 'responses': len(rows), 'metrics': metrics, 'composites': composites, 'comments': [c for row in rows for c in row['comments']] if not demo else []})
     return {'schema_version': 1, 'updated_at': datetime.now(timezone.utc).isoformat(),
             'demo': demo, 'minimum_group_size': min_responses,
             'withheld_responses': withheld, 'invalid_date_responses': invalid,

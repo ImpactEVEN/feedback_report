@@ -33,7 +33,7 @@ def main():
         workbook.close()
     else:
         records = fetch(os.environ['KOBO_SERVER'], os.environ['KOBO_ASSET_UID'], os.environ['KOBO_TOKEN'])
-    data = aggregate(records, int(os.environ.get('MIN_RESPONSES', '5')), args.demo)
+    data = aggregate(records, int(os.environ.get('MIN_RESPONSES', '2')), args.demo)
     output = Path(args.output)
     source = Path(__file__).resolve().parents[1] / 'site'
     if output.resolve() == source.resolve() or source.resolve() in output.resolve().parents:

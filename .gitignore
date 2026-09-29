@@ -1,0 +1,7 @@
+dist/
+preview/
+__pycache__/
+*.xlsx
+*.csv
+.env
+site/data/*.json
