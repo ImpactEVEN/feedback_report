@@ -25,7 +25,7 @@ jobs:
           KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
           KOBO_ASSET_UID: ${{ secrets.KOBO_ASSET_UID }}
           KOBO_SERVER: ${{ vars.KOBO_SERVER || 'https://kf.kobotoolbox.org' }}
-          MIN_RESPONSES: '5'
+          MIN_RESPONSES: '2'
         run: python scripts/build.py --output dist
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
