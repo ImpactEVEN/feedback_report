@@ -1,0 +1,47 @@
+name: Refresh and deploy dashboard
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '17 */6 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests
+      - name: Fetch and aggregate Kobo submissions
+        env:
+          KOBO_TOKEN: ${{ secrets.KOBO_TOKEN }}
+          KOBO_ASSET_UID: ${{ secrets.KOBO_ASSET_UID }}
+          KOBO_SERVER: ${{ vars.KOBO_SERVER || 'https://kf.kobotoolbox.org' }}
+          MIN_RESPONSES: '5'
+        run: python scripts/build.py --output dist
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+          retention-days: 1
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
