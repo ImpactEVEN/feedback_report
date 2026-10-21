@@ -1,0 +1,9 @@
+Replace these four files in your GitHub repository, keeping their folders:
+site/index.html
+site/dashboard.js
+site/style.css
+scripts/process_data.py
+
+Then run Actions > Refresh and deploy dashboard. Replace all four together: this release changes the published data schema.
+
+Filters now support multiple months. No selection means all months. Results and publication thresholds are grouped by month, not by trip. Comment dates show month and year; newest trip feedback remains first. Free text remains unchanged.

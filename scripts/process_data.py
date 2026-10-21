@@ -1,4 +1,4 @@
-"""Allowlisted, aggregate-only output. Never serialize original submissions."""
+"""Allowlisted monthly output. Exact trip dates are used only during processing."""
 from collections import defaultdict
 from datetime import date, datetime, timezone
 import math
@@ -52,10 +52,12 @@ def aggregate(records, min_responses=2, demo=False):
             continue
         clean = {k: rating(field(row, k)) for k in FIELDS}
         clean['comments'] = [{'category': k, 'text': field(row, k).strip()} for k in ['pre_feedback', 'feedback', 'apoyo', 'header_3'] if isinstance(field(row, k), str) and field(row, k).strip()]
-        groups[day].append(clean)
+        clean['_trip_date'] = day
+        groups[day[:7]].append(clean)
     buckets = []
     withheld = 0
-    for day, rows in sorted(groups.items()):
+    for month, rows in sorted(groups.items()):
+        rows.sort(key=lambda row: row['_trip_date'], reverse=True)
         if len(rows) < min_responses:
             withheld += len(rows)
             continue
@@ -69,8 +71,8 @@ def aggregate(records, min_responses=2, demo=False):
             # Complete cases keep each respondent equally weighted.
             values = [sum(r[k] for k in keys) / len(keys) for r in rows if all(r[k] is not None for k in keys)]
             composites[name] = {'sum': sum(values), 'n': len(values)} if len(values) >= min_responses else {'sum': None, 'n': None}
-        buckets.append({'date': day, 'responses': len(rows), 'metrics': metrics, 'composites': composites, 'comments': [c for row in rows for c in row['comments']] if not demo else []})
-    return {'schema_version': 1, 'updated_at': datetime.now(timezone.utc).isoformat(),
+        buckets.append({'month': month, 'responses': len(rows), 'metrics': metrics, 'composites': composites, 'comments': [c for row in rows for c in row['comments']] if not demo else []})
+    return {'schema_version': 2, 'updated_at': datetime.now(timezone.utc).isoformat(),
             'demo': demo, 'minimum_group_size': min_responses,
             'withheld_responses': withheld, 'invalid_date_responses': invalid,
             'fields': FIELDS, 'support_fields': SUPPORT, 'trip_fields': TRIP,
