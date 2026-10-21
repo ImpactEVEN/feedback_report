@@ -37,7 +37,7 @@ function renderComments(category=activeCommentCategory) {
  $('voices-section').hidden=false;
  $('comment-question').textContent=category==='all'?'Recommendations for preparation, the recurring team, future volunteers and other improvements.':commentQuestions[category].question;
  $('comments').replaceChildren();
- const comments=data.demo?fictionalComments:selected().flatMap(b=>(b.comments||[]).map(c=>({...c,date:b.date})));
+ const comments=data.demo?fictionalComments:selected().slice().sort((a,b)=>b.date.localeCompare(a.date)).flatMap(b=>(b.comments||[]).map(c=>({...c,date:b.date})));
  $('comments-status').textContent=data.demo?'Fictional preview examples':'Volunteer recommendations';
  $('comments-description').textContent=data.demo?'Fictional examples for the four open questions. These examples are independent of the trip filters.':'Open answers for the selected trips and period. Names are not displayed; comments are shown as submitted.';
  for(const c of comments.filter(c=>category==='all'||c.category===category)) {
